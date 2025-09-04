@@ -6,7 +6,7 @@ pydantic[email]
 pydantic-settings
 python-dotenv
 sqlalchemy
-psycopg2-binary
+psycopg[binary]
 alembic
 minio
 python-jose[cryptography]
