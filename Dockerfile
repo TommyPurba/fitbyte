@@ -1,24 +1,21 @@
-FROM --platform=linux/amd64 python:3.9-slim-bullseye as builder
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-RUN apt-get update && apt-get upgrade -y && apt-get clean
+# System deps (opsional)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential curl && \
+    rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+# Install Python deps
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
-RUN pip install --user --no-cache-dir -r requirements.txt
-
-FROM --platform=linux/amd64 python:3.9-slim-bullseye
-
-WORKDIR /app
-
-RUN apt-get update && apt-get upgrade -y && apt-get clean
-
-COPY --from=builder /root/.local /root/.local
-
-ENV PATH=/root/.local/bin:$PATH
-
-COPY . .
+# Copy app code
+COPY app /app/app
 
 EXPOSE 8000
 

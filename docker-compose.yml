@@ -1,12 +1,72 @@
-version: "3.8"
-
 services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: fitbyte
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9090"
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: admin1234
+    ports:
+      - "9000:9000"   # S3 API
+      - "9090:9090"   # Web console
+    volumes:
+      - minio-data:/data
+    # PERUBAHAN 1: Menambahkan healthcheck untuk MinIO
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
+
+  setup-minio:
+    image: minio/mc:latest
+    # PERUBAHAN 2: Mengubah depends_on untuk menunggu sampai minio sehat
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      sh -c "
+      echo 'Menunggu MinIO siap...';
+      /usr/bin/mc alias set local http://minio:9000 admin admin1234;
+      echo 'Membuat bucket...';
+      /usr/bin/mc mb --ignore-existing local/${MINIO_BUCKET:-files};
+      echo 'Setup MinIO selesai.';
+      "
+    environment:
+      MINIO_BUCKET: ${MINIO_BUCKET:-files}
+
   app:
     build: .
-    ports:
-      - "8000:8000"
     env_file:
       - .env
+    # PERUBAHAN 3: Menyederhanakan depends_on
+    depends_on:
+      db:
+        condition: service_healthy
+      setup-minio:
+        condition: service_completed_successfully
+    ports:
+      - "8000:8000"
     volumes:
-      - .:/app
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      - ./app:/app/app
+    command: >
+      bash -lc "uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+
+volumes:
+  pgdata:
+  minio-data:

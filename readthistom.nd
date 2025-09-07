@@ -1,0 +1,67 @@
+FitByte API
+API backend untuk aplikasi FitByte, dibangun menggunakan FastAPI dengan dukungan untuk otentikasi JWT, database PostgreSQL, dan penyimpanan file menggunakan MinIO.
+
+✨ Fitur Utama
+Otentikasi Pengguna: Registrasi dan Login menggunakan JWT (JSON Web Tokens).
+
+Manajemen Profil: Pengguna dapat mengelola profil mereka.
+
+Catatan Aktivitas: Pengguna dapat mencatat aktivitas kebugaran.
+
+Upload File Aman: Endpoint untuk mengunggah file yang dilindungi, dengan validasi tipe dan ukuran file.
+
+Penyimpanan Objek: Terintegrasi dengan MinIO untuk penyimpanan file yang skalabel.
+
+Struktur Proyek Modern: Menggunakan struktur proyek yang rapi dengan dependency injection.
+
+🚀 Teknologi yang Digunakan
+Backend: FastAPI
+
+Database: PostgreSQL
+
+Penyimpanan Objek: MinIO
+
+Kontainerisasi: Docker & Docker Compose
+
+Dependensi Utama Python: Uvicorn, SQLAlchemy, Psycopg2, Passlib, PyJWT, Minio.
+
+SETUP LOKAL
+Panduan untuk menjalankan proyek ini di lingkungan pengembangan lokal.
+
+1. Prasyarat
+Git
+
+Docker
+
+Docker Compose (biasanya sudah termasuk dalam Docker Desktop)
+
+2. Instalasi
+Clone repository ini:
+
+git clone <URL_REPOSITORY_ANDA>
+cd fitbyte
+
+Dapatkan File Konfigurasi Docker:
+
+PENTING: Proyek ini tidak menyertakan Dockerfile dan docker-compose.yml di dalam repository. Silakan dapatkan versi standar yang disediakan oleh tim Anda untuk menjalankan proyek.
+
+Buat file environment .env:
+Buat file baru bernama .env di root direktori proyek. File ini berisi semua konfigurasi dan rahasia aplikasi.
+
+# --- JWT SETTINGS ---
+SECRET_KEY=gantidengansecretkeyyangsangatpanjangdanacak
+
+# --- DATABASE URL ---
+DATABASE_URL=postgresql+psycopg2://postgres:root@db:5432/fitbyte
+
+# --- MINIO SETTINGS ---
+MINIO_ACCESS_KEY=admin
+MINIO_SECRET_KEY=admin1234
+MINIO_BUCKET=files
+MINIO_ENDPOINT=minio:9000
+MINIO_SECURE=false
+
+3. Menjalankan Aplikasi
+Setelah Anda memiliki Dockerfile, docker-compose.yml, dan .env, jalankan seluruh stack dengan perintah berikut:
+
+docker compose up --build -d
